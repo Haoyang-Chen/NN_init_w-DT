@@ -3,5 +3,5 @@
   <component name="Black">
     <option name="sdkName" value="Editable-XAI" />
   </component>
-  <component name="ProjectRootManager" version="2" project-jdk-name="Editable-XAI" project-jdk-type="Python SDK" />
+  <component name="ProjectRootManager" version="2" project-jdk-name="Python 3.7 (RL_basic)" project-jdk-type="Python SDK" />
 </project>
