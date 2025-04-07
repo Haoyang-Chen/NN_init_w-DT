@@ -55,50 +55,53 @@ def tree_to_nn_weights(x_in, y_in, clf):
         node_dict[i] = {}
         node_dict[i]['depth'] = node_depth[i]
         if features[i] >= 0:
-            node_dict[i]['feature'] = features[i]
+            node_dict[i]['feature'] = features[i]   #split node
         else:
-            node_dict[i]['feature'] = -2
-        node_dict[i]['child_left'] = features[left[i]]
+            node_dict[i]['feature'] = -2    #leaf node
+        node_dict[i]['child_left'] = features[left[i]]  #left child's feature
         node_dict[i]['child_right'] = features[right[i]]
 
-    num_layers = len(np.unique(node_depth))
+
+
+
+    num_layers = tree_in.max_depth + 2  # 2 for input and output
     nodes_per_level = np.zeros(num_layers)
     leaves_per_level = np.zeros(num_layers)
 
     for i in range(num_layers):
-        ind = np.where(node_depth == i)[0]
+        ind = np.where(node_depth == i-1)[0]  # indices of nodes at level i
         nodes_per_level[i] = len(np.where(features[ind] >= 0)[0])
         leaves_per_level[i] = len(np.where(features[ind] < 0)[0])
 
-    max_depth_feature = np.zeros(x_in.shape[1])
-    for i in range(len(max_depth_feature)):
-        ind = np.where(features == i)[0]
-        if len(ind) > 0:
-            max_depth_feature[i] = np.max(node_depth[ind])
+    # max_depth_feature = np.zeros(x_in.shape[1])
+    # for i in range(len(max_depth_feature)):
+    #     ind = np.where(features == i)[0]
+    #     if len(ind) > 0:
+    #         max_depth_feature[i] = np.max(node_depth[ind])
 
-    djinn_arch = np.zeros(num_layers, dtype=np.int64)
-
+    djinn_arch = np.full(num_layers, num_nodes * 2 - 1, dtype=np.int64)
     djinn_arch[0] = dim_in
-    for i in range(1, num_layers):
-        djinn_arch[i] = djinn_arch[i-1] + nodes_per_level[i]
     djinn_arch[-1] = dim_out
 
-    # initializing weights matrix
+    # initializing weights and biases matrices
 
     djinn_weights = {}
-    for i in range(num_layers-1):
-        djinn_weights[i] = np.zeros((djinn_arch[i+1], djinn_arch[i]))
+    djinn_biases = {}
+    for i in range(num_layers - 1):
+        djinn_weights[i] = np.zeros((djinn_arch[i + 1], djinn_arch[i]))
+        djinn_biases[i] = np.zeros(djinn_arch[i + 1])
 
 
+#########################
 
     new_indices = []
     for i in range(num_layers-1):
         input_dim = djinn_arch[i]
         output_dim = djinn_arch[i+1]
         new_indices.append(np.arange(input_dim, output_dim))
-        for f in range(dim_in):
-            if i < max_depth_feature[f]-1:
-                djinn_weights[i][f, f] = 1.0
+        # for f in range(dim_in):
+        #     if i < max_depth_feature[f]-1:
+        #         djinn_weights[i][f, f] = 1.0
         input_index = 0
         output_index = 0
         for index, node in node_dict.items():
@@ -107,7 +110,7 @@ def tree_to_nn_weights(x_in, y_in, clf):
             feature = node['features']
             left = node['child_left']
             right = node['child_right']
-            if index == 0 and (left < 0 or right < 0):
+            if index == 0 and (left < 0 or right < 0):  #root with leaf child
                 for j in range(i, num_layers-2):
                     djinn_weights[j][feature, feature] = 1.0
                 djinn_weights[num_layers-2][:, feature] = 1.0
