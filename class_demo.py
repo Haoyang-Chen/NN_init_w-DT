@@ -4,7 +4,7 @@ from sklearn import datasets
 from sklearn.metrics import accuracy_score, mean_absolute_error, mean_squared_error, explained_variance_score
 import torch
 import numpy as np
-from pytorch_djinn.py_djinn import DJINNetwork
+from py_djinn import DJINNetwork
 
 
 

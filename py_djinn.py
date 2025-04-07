@@ -4,7 +4,7 @@ import numpy as np
 from scipy import stats
 import os
 from sklearn.ensemble import RandomForestRegressor, RandomForestClassifier
-from pytorch_djinn.py_djinn_utils import tree_to_nn_weights, net_dropout_regression, \
+from py_djinn_utils import tree_to_nn_weights, net_dropout_regression, \
     save_checkpoint, continue_training_trees, load_checkpoint
 
 use_gpu = torch.cuda.is_available()
