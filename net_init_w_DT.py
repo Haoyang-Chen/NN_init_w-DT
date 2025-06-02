@@ -31,7 +31,7 @@ class DTNeuralNetwork(nn.Module):
 
         # Intermediate layers with sigmoid
         for i in range(1, len(self.layers) - 1):
-            x = torch.relu(self.layers[i](x))
+            x = torch.relu(self.layers[i](x)*1.5)
 
         # Output layer with sigmoid
         x = torch.sigmoid(self.layers[-1](x))
@@ -165,12 +165,12 @@ class DTToNNMapper:
                 node_feature_usage[node_id] = neuron_idx
 
                 # True neuron (x < threshold)
-                self.nn.layers[0].weight[neuron_idx, feature] = 1.0
-                self.nn.layers[0].bias[neuron_idx] = -threshold
+                self.nn.layers[0].weight[neuron_idx, feature] = -1.0
+                self.nn.layers[0].bias[neuron_idx] = threshold
 
                 # False neuron (x >= threshold)
-                self.nn.layers[0].weight[neuron_idx + 1, feature] = -1.0
-                self.nn.layers[0].bias[neuron_idx + 1] = threshold
+                self.nn.layers[0].weight[neuron_idx + 1, feature] = 1.0
+                self.nn.layers[0].bias[neuron_idx + 1] = -threshold
 
                 neuron_idx += 2
 
@@ -303,6 +303,7 @@ def test_mapping():
     # Test with some sample data
     print("\nTesting predictions...")
     test_samples = X[:5]  # First 5 samples
+    print(test_samples)
 
     # Get DT predictions
     dt_predictions = dt.predict(test_samples)
